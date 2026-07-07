@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#007aff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="颜一物理">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>颜一物理 - 管理员</title>
+    <style>
+        :root {
+            --ios-bg: #f2f2f7;
+            --ios-card: #ffffff;
+            --ios-blue: #007aff;
+            --ios-green: #34c759;
+            --ios-orange: #ff9500;
+            --ios-red: #ff3b30;
+            --ios-gray: #8e8e93;
+            --ios-light-gray: #e5e5ea;
+            --ios-dark: #1c1c1e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+            background-color: #f2f2f7;
+            color: #1c1c1e;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        /* 锁定竖屏 */
+        @media screen and (orientation: landscape) {
+            html { transform: rotate(-90deg); transform-origin: left top; }
+        }
+
+        /* 顶部安全区 */
+        .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+        /* 顶部标题栏 */
+        .header-bar {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: #007aff;
+            padding: env(safe-area-inset-top, 0px) 16px 12px 16px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(0,122,255,0.25);
+        }
+        .header-bar .title {
+            font-size: 18px; font-weight: 700; color: #fff;
+            letter-spacing: -0.3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .header-bar .subtitle {
+            font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.8);
+            margin-left: 8px;
+        }
+
+        /* 内容区 */
+        .content-area {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            padding-top: 52px;
+            padding-bottom: 64px;
+            padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background: #f2f2f7;
+        }
+        .content-area::-webkit-scrollbar { display: none; }
+        .page-content { 
+            display: none; 
+            padding: 12px 16px; 
+            padding-bottom: 20px;
+        }
+        .page-content.active { display: block; }
+
+        /* 底部Tab栏 */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-top: 1px solid rgba(0,0,0,0.08);
+            padding: 4px 0;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .tab-item {
+            flex: 1; text-align: center;
+            padding: 4px 0;
+            cursor: pointer;
+            transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tab-item .tab-icon { font-size: 22px; display: block; line-height: 1.3; }
+        .tab-item .tab-label { 
+            font-size: 10px; font-weight: 500; 
+            color: #8e8e93; margin-top: 1px;
+            line-height: 1.2;
+        }
+        .tab-item.active .tab-label { color: #007aff; }
+        .tab-item:active { opacity: 0.6; transform: scale(0.95); }
+
+        /* 卡片 */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .card-title {
+            font-size: 16px; font-weight: 700; color: #1c1c1e;
+            margin-bottom: 10px;
+        }
+        .card-subtitle {
+            font-size: 13px; color: #8e8e93;
+            margin-bottom: 8px;
+        }
+
+        /* 统计卡片 */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .stat-card .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-card .stat-label { font-size: 12px; color: #8e8e93; margin-top: 2px; font-weight: 500; }
+
+        /* 按钮 */
+        .btn { 
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 18px; border-radius: 10px; border: none;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active { transform: scale(0.96); opacity: 0.85; }
+        .btn-primary { background: #007aff; color: #fff; }
+        .btn-secondary { background: #e5e5ea; color: #333; }
+        .btn-danger { background: #ff3b30; color: #fff; }
+        .btn-small { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
+        .btn-block { width: 100%; }
+
+        /* 输入框/选择 */
+        .ios-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #f2f2f7;
+            color: #1c1c1e;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .ios-input:focus { background: #e8e8ed; }
+        .ios-select {
+            width: 100%;
+            padding: 12px 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #f2f2f7;
+            color: #1c1c1e;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* 班级彩色标签 */
+        .class-chip {
+            display: inline-flex; align-items: center;
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 600;
+            color: #fff;
+            margin: 0 4px 4px 0;
+            white-space: nowrap;
+        }
+        .class-chip-sm {
+            padding: 4px 10px; border-radius: 16px; font-size: 12px;
+        }
+
+        /* 日期方块 */
+        .date-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .date-square {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 600;
+            cursor: pointer;
+            transition: all 0.1s;
+            min-height: 32px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .date-square:active { transform: scale(0.92); }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 380px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .modal-title {
+            font-size: 18px; font-weight: 700; color: #1c1c1e;
+            margin-bottom: 16px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 60px; left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(30,30,30,0.92);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* 选中的班级标签 */
+        .class-tab {
+            display: inline-flex; align-items: center;
+            padding: 8px 16px; border-radius: 20px;
+            font-size: 14px; font-weight: 600;
+            color: #fff; cursor: pointer;
+            margin: 0 4px 8px 0;
+            transition: all 0.15s;
+            opacity: 0.65;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .class-tab.active { opacity: 1; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .class-tab:active { transform: scale(0.95); }
+
+        /* 学生卡片 */
+        .student-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .student-card .name-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .student-card .student-name {
+            font-size: 15px; font-weight: 700; color: #1c1c1e;
+        }
+        .student-card .month-label {
+            font-size: 12px; font-weight: 600; color: #8e8e93;
+            margin: 8px 0 4px 0;
+        }
+
+        /* 月历视图 */
+        .month-calendar {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .month-calendar .month-title {
+            font-size: 14px; font-weight: 700; color: #1c1c1e;
+            margin-bottom: 8px;
+        }
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 11px;
+            color: #8e8e93;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .cal-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 500;
+            cursor: pointer;
+            transition: all 0.1s;
+            min-height: 36px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .cal-cell:active { transform: scale(0.92); }
+        .cal-cell.has-schedule {
+            background: #34c759;
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(52,199,89,0.3);
+        }
+        .cal-cell.weekend { color: #007aff; }
+        .cal-cell.other-month { color: #c7c7cc; }
+
+        /* 周日历详情 */
+        .schedule-day-detail {
+            margin-top: 8px;
+            border-top: 1px solid #e5e5ea;
+            padding-top: 8px;
+        }
+        .schedule-day-detail .slot-row {
+            display: flex; align-items: center;
+            padding: 4px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f2f2f7;
+        }
+
+        /* 颜色常量 */
+        .text-primary { color: #007aff; }
+        .text-green { color: #34c759; }
+        .text-orange { color: #ff9500; }
+        .text-red { color: #ff3b30; }
+        .text-gray { color: #8e8e93; }
+        .text-dark { color: #1c1c1e; }
+
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-sm { font-size: 13px; }
+        .text-xs { font-size: 11px; }
+        .text-lg { font-size: 17px; }
+
+        .mt-4 { margin-top: 12px; }
+        .mt-2 { margin-top: 6px; }
+        .mb-2 { margin-bottom: 6px; }
+        .mb-3 { margin-bottom: 8px; }
+        .mr-2 { margin-right: 6px; }
+        .ml-auto { margin-left: auto; }
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 6px; }
+        .gap-3 { gap: 8px; }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+
+        .hidden { display: none !important; }
+
+        /* 备注图标 */
+        .note-dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #ff9500;
+            margin-left: 2px;
+            vertical-align: super;
+        }
+        .note-header {
+            font-size: 10px; color: #ff9500; font-weight: 500;
+            margin-top: 2px; line-height: 1.3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- 顶部标题栏 -->
+    <div class="header-bar safe-top" id="headerBar">
+        <div style="display:flex;align-items:center;">
+            <span class="title">颜一物理</span>
+            <span class="subtitle" id="pageTitle">首页</span>
+        </div>
+        <div id="headerRight" style="font-size:13px;color:rgba(255,255,255,0.8);font-weight:400;"></div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="content-area" id="contentArea">
+        <!-- 首页 -->
+        <div class="page-content active" id="page-home">
+            <div class="stat-grid" id="overviewStats"></div>
+            <div class="card" style="margin-top:8px;">
+                <div class="card-title">今日排课</div>
+                <div id="todayScheduleList" style="min-height:40px;"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+                <button class="btn btn-primary btn-block btn-small" onclick="exportData()">📤 导出数据</button>
+                <button class="btn btn-secondary btn-block btn-small" onclick="importData()">📥 导入数据</button>
+            </div>
+        </div>
+
+        <!-- 班级管理 -->
+        <div class="page-content" id="page-classes">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <span style="font-size:14px;font-weight:600;color:#8e8e93;" id="classCount">0 个班级</span>
+                <button class="btn btn-primary btn-small" onclick="showAddClassModal()">+ 添加班级</button>
+            </div>
+            <div id="classList"></div>
+        </div>
+
+        <!-- 排课管理 -->
+        <div class="page-content" id="page-schedule">
+            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+                <select id="scheduleYear" class="ios-select" style="width:auto;flex:1;min-width:80px;padding:8px 10px;font-size:14px;" onchange="renderScheduleView()"></select>
+                <select id="scheduleMonth" class="ios-select" style="width:auto;flex:1;min-width:60px;padding:8px 10px;font-size:14px;" onchange="renderScheduleView()"></select>
+                <select id="scheduleFilterClass" class="ios-select" style="width:auto;flex:2;min-width:100px;padding:8px 10px;font-size:14px;" onchange="renderScheduleView()"></select>
+            </div>
+            <div id="scheduleContent"></div>
+            <div style="margin-top:6px;">
+                <button class="btn btn-secondary btn-small btn-block" onclick="showTimeSlotPresetsModal()">⏱ 编辑时间段预设</button>
+            </div>
+        </div>
+
+        <!-- 课消打卡 -->
+        <div class="page-content" id="page-attendance">
+            <div id="attendanceClassTabs" style="display:flex;flex-wrap:wrap;margin-bottom:8px;"></div>
+            <div id="attendanceContent"></div>
+        </div>
+
+        <!-- 学费统计 -->
+        <div class="page-content" id="page-tuition">
+            <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;">
+                <select id="tuitionYear" class="ios-select" style="flex:1;padding:8px 10px;font-size:14px;" onchange="renderTuitionView()"></select>
+                <select id="tuitionQuarter" class="ios-select" style="flex:1;padding:8px 10px;font-size:14px;" onchange="renderTuitionView()">
+                    <option value="spring">春季(3-6月)</option>
+                    <option value="summer">暑假(7-8月)</option>
+                    <option value="fall" selected>秋季(9-12月)</option>
+                    <option value="winter">寒假(1-2月)</option>
+                </select>
+            </div>
+            <div id="tuitionClassTabs" style="display:flex;flex-wrap:wrap;margin-bottom:8px;"></div>
+            <div id="tuitionContent"></div>
+        </div>
+
+        <!-- 设置 -->
+        <div class="page-content" id="page-settings">
+            <div class="card">
+                <div class="card-title">管理员名称</div>
+                <div style="display:flex;gap:6px;">
+                    <input type="text" id="adminNameInput" class="ios-input" placeholder="输入管理员名称" style="flex:1;">
+                    <button class="btn btn-primary btn-small" onclick="saveAdminName()">保存</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">数据管理</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <button class="btn btn-primary btn-small btn-block" onclick="exportData()">📤 导出数据（含 mobile-admin 标记）</button>
+                    <button class="btn btn-secondary btn-small btn-block" onclick="importData()">📥 导入数据</button>
+                    <button class="btn btn-secondary btn-small btn-block" onclick="backupData()">💾 下载备份文件</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">版本信息</div>
+                <div id="versionInfo" style="font-size:13px;color:#8e8e93;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部Tab栏 -->
+    <div class="tab-bar safe-bottom">
+        <div class="tab-item active" data-page="home" onclick="switchTab('home')">
+            <span class="tab-icon">🏠</span>
+            <span class="tab-label">首页</span>
+        </div>
+        <div class="tab-item" data-page="classes" onclick="switchTab('classes')">
+            <span class="tab-icon">👥</span>
+            <span class="tab-label">班级</span>
+        </div>
+        <div class="tab-item" data-page="schedule" onclick="switchTab('schedule')">
+            <span class="tab-icon">📅</span>
+            <span class="tab-label">排课</span>
+        </div>
+        <div class="tab-item" data-page="attendance" onclick="switchTab('attendance')">
+            <span class="tab-icon">✅</span>
+            <span class="tab-label">课消</span>
+        </div>
+        <div class="tab-item" data-page="tuition" onclick="switchTab('tuition')">
+            <span class="tab-icon">💰</span>
+            <span class="tab-label">学费</span>
+        </div>
+        <div class="tab-item" data-page="settings" onclick="switchTab('settings')">
+            <span class="tab-icon">⚙️</span>
+            <span class="tab-label">设置</span>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <script>
+        // ==================== 数据结构 ====================
+        let students = [];
+        let modules = [];
+        let levelConfig = [];
+        let studentGroups = [];
+        let scheduleClasses = [];
+        let classTopics = {};
+        let classDateNotes = {};
+        let weeklyScheduleData = {};
+        let timeSlotPresets = [
+            { id: 'ts_A', name: 'A', time: '08:00~10:00' },
+            { id: 'ts_B', name: 'B', time: '10:10~12:10' },
+            { id: 'ts_C', name: 'C', time: '14:00~16:00' },
+            { id: 'ts_D', name: 'D', time: '16:10~18:10' },
+            { id: 'ts_E', name: 'E', time: '19:00~21:00' }
+        ];
+        let studentTuitionData = {};
+        let paymentRecords = [];
+        let adminDisplayName = '';
+
+        // 颜色常量
+        const COLOR_NORMAL_ATTENDANCE = '#4caf50';
+        const COLOR_SPECIAL_PRICE = '#90caf9';
+        const COLOR_LEAVE = '#ffb74d';
+        const COLOR_ABSENT = '#e57373';
+
+        // ==================== 核心数据函数 ====================
+        function loadData() {
+            const savedStudents = localStorage.getItem('physics_students');
+            if (savedStudents) {
+                students = JSON.parse(savedStudents);
+            }
+            if (localStorage.getItem('physics_schedule_classes')) {
+                scheduleClasses = JSON.parse(localStorage.getItem('physics_schedule_classes'));
+            }
+            if (localStorage.getItem('physics_modules')) {
+                modules = JSON.parse(localStorage.getItem('physics_modules'));
+            }
+            if (localStorage.getItem('physics_level_config')) {
+                levelConfig = JSON.parse(localStorage.getItem('physics_level_config'));
+            }
+            if (localStorage.getItem('physics_student_groups')) {
+                studentGroups = JSON.parse(localStorage.getItem('physics_student_groups'));
+            }
+            timeSlotPresets = JSON.parse(localStorage.getItem('physics_timeslot_presets')) || timeSlotPresets;
+            classTopics = JSON.parse(localStorage.getItem('physics_class_topics')) || {};
+            classDateNotes = JSON.parse(localStorage.getItem('physics_class_date_notes')) || {};
+            weeklyScheduleData = JSON.parse(localStorage.getItem('physics_weekly_schedule')) || {};
+            studentTuitionData = JSON.parse(localStorage.getItem('physics_student_tuition')) || {};
+            paymentRecords = JSON.parse(localStorage.getItem('physics_payment_records')) || [];
+            adminDisplayName = localStorage.getItem('physics_admin_display_name') || '老师';
+        }
+
+        function saveData() {
+            localStorage.setItem('physics_students', JSON.stringify(students));
+            localStorage.setItem('physics_modules', JSON.stringify(modules));
+            localStorage.setItem('physics_level_config', JSON.stringify(levelConfig));
+            localStorage.setItem('physics_student_groups', JSON.stringify(studentGroups));
+            localStorage.setItem('physics_schedule_classes', JSON.stringify(scheduleClasses));
+            localStorage.setItem('physics_timeslot_presets', JSON.stringify(timeSlotPresets));
+            localStorage.setItem('physics_class_topics', JSON.stringify(classTopics));
+            localStorage.setItem('physics_class_date_notes', JSON.stringify(classDateNotes));
+            localStorage.setItem('physics_weekly_schedule', JSON.stringify(weeklyScheduleData));
+            localStorage.setItem('physics_student_tuition', JSON.stringify(studentTuitionData));
+            localStorage.setItem('physics_payment_records', JSON.stringify(paymentRecords));
+        }
+
+        function getAllData() {
+            return {
+                version: 21,
+                timestamp: new Date().toISOString(),
+                source: 'mobile-admin',
+                students: students,
+                modules: modules,
+                levelConfig: levelConfig,
+                studentGroups: studentGroups,
+                scheduleClasses: scheduleClasses,
+                timeSlotPresets: timeSlotPresets,
+                classTopics: classTopics,
+                classDateNotes: classDateNotes,
+                weeklyScheduleData: weeklyScheduleData,
+                studentTuitionData: studentTuitionData,
+                paymentRecords: paymentRecords,
+                adminDisplayName: adminDisplayName
+            };
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (!data.version) { showToast('无效的备份文件'); return; }
+                        if (!confirm('确定导入备份数据？将覆盖当前所有数据！')) return;
+                        if (data.students) students = data.students;
+                        if (data.modules) modules = data.modules;
+                        if (data.levelConfig) levelConfig = data.levelConfig;
+                        if (data.studentGroups) studentGroups = data.studentGroups;
+                        if (data.scheduleClasses) scheduleClasses = data.scheduleClasses;
+                        if (data.timeSlotPresets) timeSlotPresets = data.timeSlotPresets;
+                        if (data.classTopics) classTopics = data.classTopics;
+                        if (data.classDateNotes) classDateNotes = data.classDateNotes;
+                        if (data.weeklyScheduleData) weeklyScheduleData = data.weeklyScheduleData;
+                        if (data.studentTuitionData) studentTuitionData = data.studentTuitionData;
+                        if (data.paymentRecords) paymentRecords = data.paymentRecords;
+                        if (data.adminDisplayName) adminDisplayName = data.adminDisplayName;
+                        saveData();
+                        refreshAll();
+                        showToast('数据导入成功！');
+                    } catch(err) {
+                        showToast('文件解析失败：' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function exportData() {
+            const data = getAllData();
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date();
+            const dateStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '_' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+            a.href = url;
+            a.download = 'physics_admin_backup_' + dateStr + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('数据已导出（mobile-admin 标记）');
+        }
+
+        function backupData() {
+            const data = getAllData();
+            delete data.source;
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date();
+            const dateStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '_' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+            a.href = url;
+            a.download = 'physics_backup_' + dateStr + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('备份文件已下载');
+        }
+
+        // ==================== UI辅助函数 ====================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function showModal(html) {
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        function getLessonPrice(studentId, date) {
+            const data = studentTuitionData[studentId];
+            if (!data) return 0;
+            if (data.specialPrices && data.specialPrices[date]) return data.specialPrices[date];
+            return data.defaultPrice || 0;
+        }
+
+        function getAllTimeAttendanceCount(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return 0;
+            let count = 0;
+            (student.attendance_records || []).forEach(r => {
+                if (r.status === '出勤' || r.status === '迟到') count++;
+            });
+            return count;
+        }
+
+        function getAttendanceCount(studentId, year, month) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return 0;
+            const prefix = year + '-' + String(month).padStart(2, '0');
+            let count = 0;
+            (student.attendance_records || []).forEach(r => {
+                if (r.date && r.date.startsWith(prefix) && (r.status === '出勤' || r.status === '迟到')) count++;
+            });
+            return count;
+        }
+
+        function getTotalLessons(studentId, months) {
+            let count = 0;
+            months.forEach(({ year, month }) => {
+                count += getAttendanceCount(studentId, year, month);
+            });
+            return count;
+        }
+
+        function getTotalConsumed(studentId, months) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return 0;
+            let total = 0;
+            months.forEach(({ year, month }) => {
+                const prefix = year + '-' + String(month).padStart(2, '0');
+                (student.attendance_records || []).forEach(r => {
+                    if (r.date && r.date.startsWith(prefix) && (r.status === '出勤' || r.status === '迟到')) {
+                        total += getLessonPrice(studentId, r.date);
+                    }
+                });
+            });
+            return total;
+        }
+
+        function getTuitionMonthRange() {
+            const year = parseInt(document.getElementById('tuitionYear').value);
+            const quarter = document.getElementById('tuitionQuarter').value;
+            let startMonth, endMonth;
+            if (quarter === 'spring') { startMonth = 3; endMonth = 6; }
+            else if (quarter === 'summer') { startMonth = 7; endMonth = 8; }
+            else if (quarter === 'fall') { startMonth = 9; endMonth = 12; }
+            else if (quarter === 'winter') { startMonth = 2; endMonth = 2; }
+            const months = [];
+            let y = year, m = startMonth;
+            while (y < year || (y === year && m <= endMonth)) {
+                months.push({ year: y, month: m });
+                m++;
+                if (m > 12) { m = 1; y++; }
+            }
+            return months;
+        }
+
+        function getClassScheduledDates(classId, months) {
+            const dates = [];
+            months.forEach(({ year, month }) => {
+                const daysInMonth = new Date(year, month, 0).getDate();
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const date = year + '-' + String(month).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                    if (weeklyScheduleData[date]) {
+                        const hasClass = Object.values(weeklyScheduleData[date]).some(classIds => classIds.includes(classId));
+                        if (hasClass) dates.push(date);
+                    }
+                }
+            });
+            return dates.sort();
+        }
+
+        function getClassScheduledDatesInRange(classId, startDate, endDate) {
+            const dates = [];
+            let d = new Date(startDate);
+            const end = new Date(endDate);
+            while (d <= end) {
+                const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                if (weeklyScheduleData[dateStr]) {
+                    const hasClass = Object.values(weeklyScheduleData[dateStr]).some(classIds => classIds.includes(classId));
+                    if (hasClass) dates.push(dateStr);
+                }
+                d.setDate(d.getDate() + 1);
+            }
+            return dates;
+        }
+
+        // ==================== Tab切换 ====================
+        const tabNames = { home:'首页', classes:'班级管理', schedule:'排课管理', attendance:'课消打卡', tuition:'学费统计', settings:'设置' };
+        let currentTab = 'home';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('page-' + tab).classList.add('active');
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+            document.querySelector('.tab-item[data-page="' + tab + '"]').classList.add('active');
+            document.getElementById('pageTitle').textContent = tabNames[tab] || tab;
+            renderCurrentTab();
+        }
+
+        function renderCurrentTab() {
+            switch(currentTab) {
+                case 'home': renderHome(); break;
+                case 'classes': renderClasses(); break;
+                case 'schedule': renderScheduleView(); break;
+                case 'attendance': renderAttendanceView(); break;
+                case 'tuition': renderTuitionView(); break;
+                case 'settings': renderSettings(); break;
+            }
+        }
+
+        function refreshAll() {
+            renderCurrentTab();
+        }
+
+        // ==================== 首页 ====================
+        function renderHome() {
+            const totalStudents = students.filter(s => s.role !== 'admin').length;
+            const totalClasses = scheduleClasses.length;
+            
+            // 今日排课
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+            const todaySchedule = weeklyScheduleData[todayStr] || {};
+            
+            // 本周课消
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay() + 1);
+            let weekAttendCount = 0;
+            students.forEach(s => {
+                (s.attendance_records || []).forEach(r => {
+                    if (r.status === '出勤' || r.status === '迟到') {
+                        const rd = new Date(r.date);
+                        if (rd >= weekStart && rd <= today) weekAttendCount++;
+                    }
+                });
+            });
+
+            const statsHtml = `
+                <div class="stat-card" style="background:linear-gradient(135deg,#007aff,#5856d6);">
+                    <div class="stat-value" style="color:#fff;">${totalStudents}</div>
+                    <div class="stat-label" style="color:rgba(255,255,255,0.75);">学生总数</div>
+                </div>
+                <div class="stat-card" style="background:#fff;">
+                    <div class="stat-value" style="color:#007aff;">${totalClasses}</div>
+                    <div class="stat-label">班级总数</div>
+                </div>
+                <div class="stat-card" style="background:#fff;">
+                    <div class="stat-value" style="color:#ff9500;">${Object.keys(todaySchedule).length > 0 ? Object.values(todaySchedule).reduce((a,b) => a + b.length, 0) : 0}</div>
+                    <div class="stat-label">今日排课</div>
+                </div>
+                <div class="stat-card" style="background:#fff;">
+                    <div class="stat-value" style="color:#34c759;">${weekAttendCount}</div>
+                    <div class="stat-label">本周课消</div>
+                </div>
+            `;
+            document.getElementById('overviewStats').innerHTML = statsHtml;
+
+            // 今日排课列表
+            let todayHtml = '';
+            const timeSlotMap = {};
+            timeSlotPresets.forEach(s => timeSlotMap[s.id] = s);
+            
+            if (Object.keys(todaySchedule).length === 0) {
+                todayHtml = '<div style="text-align:center;padding:20px 0;color:#8e8e93;font-size:14px;">今日暂无排课</div>';
+            } else {
+                Object.entries(todaySchedule).forEach(([slotId, classIds]) => {
+                    const slot = timeSlotMap[slotId] || { name: slotId, time: '' };
+                    classIds.forEach(clsId => {
+                        const cls = scheduleClasses.find(c => c.id === clsId);
+                        if (cls) {
+                            const topic = classTopics[clsId + '_' + todayStr] || '';
+                            todayHtml += '<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f2f2f7;">';
+                            todayHtml += '<span style="font-size:13px;font-weight:600;color:#333;min-width:42px;">' + (slot.name||'') + '</span>';
+                            todayHtml += '<span style="font-size:13px;font-weight:500;color:#666;min-width:80px;">' + (slot.time||'') + '</span>';
+                            todayHtml += '<span class="class-chip-sm" style="background:' + (cls.color||'#007aff') + ';">' + cls.name + '</span>';
+                            if (topic) todayHtml += '<span style="font-size:12px;color:#8e8e93;margin-left:6px;">' + topic + '</span>';
+                            todayHtml += '</div>';
+                        }
+                    });
+                });
+            }
+            document.getElementById('todayScheduleList').innerHTML = todayHtml;
+        }
+
+        // ==================== 班级管理 ====================
+        function renderClasses() {
+            document.getElementById('classCount').textContent = scheduleClasses.length + ' 个班级';
+            if (scheduleClasses.length === 0) {
+                document.getElementById('classList').innerHTML = '<div style="text-align:center;padding:40px 0;color:#8e8e93;">暂无班级，点击上方添加</div>';
+                return;
+            }
+            let html = '';
+            scheduleClasses.forEach(cls => {
+                const count = (cls.studentIds || []).length;
+                const color = cls.color || '#007aff';
+                html += '<div class="card" onclick="showEditClassModal(\'' + cls.id + '\')" style="cursor:pointer;border-left:4px solid ' + color + ';">';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+                html += '<div><div style="font-size:15px;font-weight:700;color:#1c1c1e;">' + cls.name + '</div>';
+                html += '<div style="font-size:12px;color:#8e8e93;margin-top:2px;">' + (cls.grade||'') + ' · ' + (cls.level||'') + ' · ' + count + '人</div></div>';
+                html += '<span class="class-chip-sm" style="background:' + color + ';">' + (count) + '人</span>';
+                html += '</div></div>';
+            });
+            document.getElementById('classList').innerHTML = html;
+        }
+
+        function showAddClassModal() {
+            const colors = ['#2196f3','#4caf50','#ff9800','#9c27b0','#f44336','#00bcd4','#e91e63','#ff5722'];
+            let colorHtml = colors.map((c, i) => 
+                '<label style="display:inline-block;margin:4px;cursor:pointer;"><input type="radio" name="newClassColor" value="'+c+'" '+(i===0?'checked':'')+' style="display:none;" onchange="this.parentElement.querySelector(\'.color-preview\').style.outline=\'3px solid #007aff\'"><span class="color-preview" style="display:inline-block;width:28px;height:28px;border-radius:50%;background:'+c+';outline:'+(i===0?'3px solid #007aff':'2px solid transparent')+';outline-offset:2px;"></span></label>'
+            ).join('');
+            const html = '<div class="modal-title">添加班级</div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">班级名称</label><input type="text" id="newClassName" class="ios-input" placeholder="如：高一力学A班"></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">层次</label><input type="text" id="newClassLevel" class="ios-input" placeholder="如：提高班"></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">年级</label><input type="text" id="newClassGrade" class="ios-input" placeholder="如：高一"></div>' +
+                '<div style="margin-bottom:14px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">颜色</label><div>' + colorHtml + '</div></div>' +
+                '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+                '<button class="btn btn-secondary btn-small" onclick="closeModal()">取消</button>' +
+                '<button class="btn btn-primary btn-small" onclick="saveNewClass()">添加</button></div>';
+            showModal(html);
+        }
+
+        function saveNewClass() {
+            const name = document.getElementById('newClassName').value.trim();
+            if (!name) { showToast('请输入班级名称'); return; }
+            const colorRadio = document.querySelector('input[name="newClassColor"]:checked');
+            const id = 'cls_' + Date.now();
+            scheduleClasses.push({
+                id: id,
+                name: name,
+                level: document.getElementById('newClassLevel').value.trim(),
+                grade: document.getElementById('newClassGrade').value.trim(),
+                color: colorRadio ? colorRadio.value : '#2196f3',
+                studentIds: []
+            });
+            saveData();
+            closeModal();
+            renderClasses();
+            showToast('班级已添加');
+        }
+
+        function showEditClassModal(classId) {
+            const cls = scheduleClasses.find(c => c.id === classId);
+            if (!cls) return;
+            const colors = ['#2196f3','#4caf50','#ff9800','#9c27b0','#f44336','#00bcd4','#e91e63','#ff5722'];
+            let colorHtml = colors.map(c => 
+                '<label style="display:inline-block;margin:4px;cursor:pointer;"><input type="radio" name="editClassColor" value="'+c+'" '+(cls.color===c?'checked':'')+' style="display:none;"><span class="color-preview" style="display:inline-block;width:28px;height:28px;border-radius:50%;background:'+c+';outline:'+(cls.color===c?'3px solid #007aff':'2px solid transparent')+';outline-offset:2px;"></span></label>'
+            ).join('');
+            
+            // 学生列表
+            const classStudents = (cls.studentIds||[]).map(id => students.find(s => s.id === id)).filter(Boolean);
+            const ungroupedStudents = students.filter(s => s.role !== 'admin' && !scheduleClasses.some(c => (c.studentIds||[]).includes(s.id)));
+            
+            const html = '<div class="modal-title">' + cls.name + '</div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">班级名称</label><input type="text" id="editClassName" class="ios-input" value="' + cls.name + '"></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">层次</label><input type="text" id="editClassLevel" class="ios-input" value="' + (cls.level||'') + '"></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">年级</label><input type="text" id="editClassGrade" class="ios-input" value="' + (cls.grade||'') + '"></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">颜色</label><div>' + colorHtml + '</div></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">班级学生（' + classStudents.length + '人）</label><div style="display:flex;flex-wrap:wrap;gap:4px;max-height:100px;overflow-y:auto;">' + 
+                classStudents.map(s => '<span class="class-chip-sm" style="background:'+(cls.color||'#007aff')+';position:relative;padding-right:22px;cursor:pointer;" onclick="removeStudentFromClass('+s.id+',\''+classId+'\')">' + s.name + '<span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:12px;">×</span></span>').join('') +
+                '</div></div>' +
+                '<div style="margin-bottom:14px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">添加学生到班级</label>' +
+                (ungroupedStudents.length > 0 
+                    ? '<div style="display:flex;flex-wrap:wrap;gap:4px;max-height:100px;overflow-y:auto;">' + 
+                      ungroupedStudents.map(s => '<span class="class-chip-sm" style="background:#e5e5ea;color:#333;cursor:pointer;" onclick="addStudentToClass('+s.id+',\''+classId+'\')">+ ' + s.name + '</span>').join('') +
+                      '</div>'
+                    : '<span style="font-size:12px;color:#8e8e93;">所有学生已分配到班级</span>'
+                ) + '</div>' +
+                '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+                '<button class="btn btn-danger btn-small" onclick="if(confirm(\'确定删除此班级？\')){deleteScheduleClass(\''+classId+'\')}" style="margin-right:auto;">删除班级</button>' +
+                '<button class="btn btn-secondary btn-small" onclick="closeModal()">取消</button>' +
+                '<button class="btn btn-primary btn-small" onclick="saveEditClass(\''+classId+'\')">保存</button></div>';
+            showModal(html);
+        }
+
+        function saveEditClass(classId) {
+            const cls = scheduleClasses.find(c => c.id === classId);
+            if (!cls) return;
+            cls.name = document.getElementById('editClassName').value.trim();
+            cls.level = document.getElementById('editClassLevel').value.trim();
+            cls.grade = document.getElementById('editClassGrade').value.trim();
+            const colorRadio = document.querySelector('input[name="editClassColor"]:checked');
+            if (colorRadio) cls.color = colorRadio.value;
+            saveData();
+            closeModal();
+            renderClasses();
+            showToast('班级已保存');
+        }
+
+        function deleteScheduleClass(classId) {
+            scheduleClasses = scheduleClasses.filter(c => c.id !== classId);
+            saveData();
+            closeModal();
+            switchTab('classes');
+            showToast('班级已删除');
+        }
+
+        function addStudentToClass(studentId, classId) {
+            const cls = scheduleClasses.find(c => c.id === classId);
+            if (!cls) return;
+            if (!cls.studentIds) cls.studentIds = [];
+            if (!cls.studentIds.includes(studentId)) cls.studentIds.push(studentId);
+            saveData();
+            showEditClassModal(classId);
+        }
+
+        function removeStudentFromClass(studentId, classId) {
+            const cls = scheduleClasses.find(c => c.id === classId);
+            if (!cls) return;
+            cls.studentIds = (cls.studentIds||[]).filter(id => id !== studentId);
+            saveData();
+            showEditClassModal(classId);
+        }
+
+        // ==================== 排课管理 ====================
+        function renderScheduleView() {
+            const yearSel = document.getElementById('scheduleYear');
+            const monthSel = document.getElementById('scheduleMonth');
+            const filterSel = document.getElementById('scheduleFilterClass');
+            
+            if (yearSel.options.length === 0) {
+                const now = new Date();
+                for (let y = now.getFullYear() - 1; y <= now.getFullYear() + 2; y++) {
+                    yearSel.innerHTML += '<option value="'+y+'"'+(y===now.getFullYear()?' selected':'')+'>'+y+'年</option>';
+                }
+                for (let m = 1; m <= 12; m++) {
+                    monthSel.innerHTML += '<option value="'+m+'"'+(m===(now.getMonth()+1)?' selected':'')+'>'+m+'月</option>';
+                }
+                filterSel.innerHTML = '<option value="">全部班级</option>' + scheduleClasses.map(c => '<option value="'+c.id+'">'+c.name+'</option>').join('');
+            }
+            
+            const year = parseInt(yearSel.value);
+            const month = parseInt(monthSel.value);
+            const filterClassId = filterSel.value;
+            
+            // 生成月历
+            const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(year, month, 0).getDate();
+            
+            // 获取该月所有排课日期
+            const monthScheduledDates = {};
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = year + '-' + String(month).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                if (weeklyScheduleData[date]) {
+                    Object.entries(weeklyScheduleData[date]).forEach(([slotId, classIds]) => {
+                        const filteredIds = filterClassId ? classIds.filter(id => id === filterClassId) : classIds;
+                        if (filteredIds.length > 0) {
+                            if (!monthScheduledDates[date]) monthScheduledDates[date] = {};
+                            monthScheduledDates[date][slotId] = filteredIds;
+                        }
+                    });
+                }
+            }
+            
+            let html = '<div class="month-calendar">';
+            html += '<div class="month-title">' + year + '年' + month + '月</div>';
+            html += '<div class="calendar-header"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>';
+            html += '<div class="calendar-grid">';
+            
+            // 空白格
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="cal-cell"></div>';
+            }
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = year + '-' + String(month).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                const dayOfWeek = new Date(year, month - 1, d).getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const hasSchedule = monthScheduledDates[date] && Object.keys(monthScheduledDates[date]).length > 0;
+                const cls = hasSchedule ? 'has-schedule' : '';
+                const weekendCls = isWeekend ? 'weekend' : '';
+                html += '<div class="cal-cell ' + cls + ' ' + weekendCls + '" onclick="showScheduleDayDetail(\'' + date + '\')">' + d + '</div>';
+            }
+            
+            html += '</div></div>';
+            
+            // 排课详情（点击日期展开）
+            html += '<div id="scheduleDayDetail" style="display:none;"></div>';
+            
+            document.getElementById('scheduleContent').innerHTML = html;
+        }
+
+        function showScheduleDayDetail(date) {
+            const container = document.getElementById('scheduleDayDetail');
+            const existing = container.style.display;
+            if (existing === 'block' && container.dataset.date === date) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            const dayData = weeklyScheduleData[date] || {};
+            let html = '<div class="card">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+            html += '<span style="font-size:15px;font-weight:700;">' + date + '</span>';
+            html += '<span style="font-size:12px;color:#8e8e93;">点击时间段添加/移除班级</span>';
+            html += '</div>';
+            
+            // 收集该日期所有已安排的班级
+            const scheduledClassIds = new Set();
+            Object.values(dayData).forEach(classIds => classIds.forEach(id => scheduledClassIds.add(id)));
+            
+            // 显示所有时间段
+            timeSlotPresets.forEach(slot => {
+                const classesInSlot = dayData[slot.id] || [];
+                html += '<div class="slot-row">';
+                html += '<span style="font-weight:600;min-width:40px;color:#007aff;">' + slot.name + '</span>';
+                html += '<span style="color:#8e8e93;min-width:80px;font-size:12px;">' + slot.time + '</span>';
+                html += '<div style="flex:1;display:flex;flex-wrap:wrap;gap:3px;">';
+                
+                // 显示该时间段的班级
+                classesInSlot.forEach(clsId => {
+                    const cls = scheduleClasses.find(c => c.id === clsId);
+                    if (cls) {
+                        html += '<span class="class-chip-sm" style="background:'+(cls.color||'#007aff')+';cursor:pointer;padding-right:18px;position:relative;" onclick="removeClassFromSlot(\''+clsId+'\',\''+date+'\',\''+slot.id+'\')">' + cls.name + '<span style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:10px;">×</span></span>';
+                    }
+                });
+                
+                // 添加班级按钮
+                html += '<span class="class-chip-sm" style="background:#e5e5ea;color:#666;cursor:pointer;" onclick="showAddClassToSlot(\''+date+'\',\''+slot.id+'\')">+</span>';
+                html += '</div>';
+                // 主题输入
+                const topicKey = classesInSlot.length > 0 ? classesInSlot[0] + '_' + date : '';
+                const topic = topicKey ? (classTopics[topicKey] || '') : '';
+                html += '<div style="width:100%;margin-top:4px;display:flex;gap:4px;align-items:center;">';
+                html += '<input type="text" class="ios-input" style="flex:1;padding:6px 10px;font-size:12px;" placeholder="上课主题" value="' + topic + '" onchange="setClassTopicForSlot(\''+date+'\',\''+slot.id+'\',this.value)">';
+                html += '</div>';
+                html += '</div>';
+            });
+            
+            html += '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e5ea;">';
+            // 未安排的时间段标签
+            html += '<div style="font-size:12px;color:#8e8e93;margin-bottom:4px;">未分配时间段的班级：</div>';
+            const unassignedClasses = [];
+            Object.keys(dayData).filter(k => !timeSlotPresets.some(s => s.id === k)).forEach(slotId => {
+                dayData[slotId].forEach(clsId => {
+                    const cls = scheduleClasses.find(c => c.id === clsId);
+                    if (cls) unassignedClasses.push({ cls, slotId });
+                });
+            });
+            if (unassignedClasses.length > 0) {
+                unassignedClasses.forEach(({ cls, slotId }) => {
+                    html += '<span class="class-chip-sm" style="background:'+(cls.color||'#ff9500')+';cursor:pointer;position:relative;padding-right:18px;" onclick="removeClassFromSlot(\''+cls.id+'\',\''+date+'\',\''+slotId+'\')">' + cls.name + ' ('+slotId+')<span style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:10px;">×</span></span>';
+                });
+            } else {
+                html += '<span style="font-size:12px;color:#c7c7cc;">无</span>';
+            }
+            html += '</div>';
+            
+            html += '</div>';
+            container.innerHTML = html;
+            container.style.display = 'block';
+            container.dataset.date = date;
+        }
+
+        function showAddClassToSlot(date, slotId) {
+            const dayData = weeklyScheduleData[date] || {};
+            const existingIds = dayData[slotId] || [];
+            const availableClasses = scheduleClasses.filter(c => !existingIds.includes(c.id));
+            if (availableClasses.length === 0) {
+                showToast('所有班级已安排');
+                return;
+            }
+            let html = '<div class="modal-title">添加到 ' + date + ' ' + (timeSlotPresets.find(s=>s.id===slotId)?.name||slotId) + '</div>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+            availableClasses.forEach(cls => {
+                html += '<span class="class-chip" style="background:'+(cls.color||'#007aff')+';cursor:pointer;" onclick="addClassToSlot(\''+cls.id+'\',\''+date+'\',\''+slotId+'\')">' + cls.name + '</span>';
+            });
+            html += '</div>';
+            html += '<div style="margin-top:12px;text-align:center;"><button class="btn btn-secondary btn-small" onclick="closeModal()">取消</button></div>';
+            showModal(html);
+        }
+
+        function addClassToSlot(classId, date, slotId) {
+            if (!weeklyScheduleData[date]) weeklyScheduleData[date] = {};
+            if (!weeklyScheduleData[date][slotId]) weeklyScheduleData[date][slotId] = [];
+            if (!weeklyScheduleData[date][slotId].includes(classId)) {
+                weeklyScheduleData[date][slotId].push(classId);
+            }
+            saveData();
+            closeModal();
+            showScheduleDayDetail(date);
+            showToast('已添加');
+        }
+
+        function removeClassFromSlot(classId, date, slotId) {
+            if (weeklyScheduleData[date] && weeklyScheduleData[date][slotId]) {
+                weeklyScheduleData[date][slotId] = weeklyScheduleData[date][slotId].filter(id => id !== classId);
+                if (weeklyScheduleData[date][slotId].length === 0) delete weeklyScheduleData[date][slotId];
+                if (Object.keys(weeklyScheduleData[date]).length === 0) delete weeklyScheduleData[date];
+            }
+            saveData();
+            showScheduleDayDetail(date);
+        }
+
+        function setClassTopicForSlot(date, slotId, topic) {
+            const dayData = weeklyScheduleData[date] || {};
+            const classIds = dayData[slotId] || [];
+            classIds.forEach(clsId => {
+                const key = clsId + '_' + date;
+                if (topic.trim()) {
+                    classTopics[key] = topic.trim();
+                } else {
+                    delete classTopics[key];
+                }
+            });
+            saveData();
+        }
+
+        function showTimeSlotPresetsModal() {
+            let html = '<div class="modal-title">时间段预设</div>';
+            timeSlotPresets.forEach((slot, i) => {
+                html += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">';
+                html += '<input type="text" class="ios-input" style="flex:0 0 50px;padding:8px;font-size:14px;" value="' + slot.name + '" id="tsName_' + i + '" placeholder="代号">';
+                html += '<input type="text" class="ios-input" style="flex:1;padding:8px;font-size:14px;" value="' + slot.time + '" id="tsTime_' + i + '" placeholder="如 08:00~10:00">';
+                html += '<button class="btn btn-danger btn-small" onclick="deleteTimePreset('+i+')" style="padding:6px;">×</button>';
+                html += '</div>';
+            });
+            html += '<button class="btn btn-secondary btn-small btn-block" onclick="addTimePreset()" style="margin-bottom:10px;">+ 添加时间段</button>';
+            html += '<div style="display:flex;gap:8px;justify-content:flex-end;">';
+            html += '<button class="btn btn-secondary btn-small" onclick="closeModal()">取消</button>';
+            html += '<button class="btn btn-primary btn-small" onclick="saveTimePresets()">保存</button></div>';
+            showModal(html);
+        }
+
+        function addTimePreset() {
+            const idx = timeSlotPresets.length;
+            const container = document.getElementById('modalContent');
+            const newHtml = '<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;" id="tsRow_' + idx + '">' +
+                '<input type="text" class="ios-input" style="flex:0 0 50px;padding:8px;font-size:14px;" id="tsName_' + idx + '" placeholder="代号" value="F">' +
+                '<input type="text" class="ios-input" style="flex:1;padding:8px;font-size:14px;" id="tsTime_' + idx + '" placeholder="如 08:00~10:00" value="">' +
+                '<button class="btn btn-danger btn-small" onclick="document.getElementById(\'tsRow_' + idx + '\').remove()" style="padding:6px;">×</button></div>';
+            const saveBtn = container.querySelector('div[style*="justify-content: flex-end"]');
+            container.insertBefore(document.createRange().createContextualFragment(newHtml), saveBtn.parentElement);
+        }
+
+        function deleteTimePreset(idx) {
+            timeSlotPresets.splice(idx, 1);
+            closeModal();
+            showTimeSlotPresetsModal();
+        }
+
+        function saveTimePresets() {
+            const newPresets = [];
+            let i = 0;
+            while (true) {
+                const nameEl = document.getElementById('tsName_' + i);
+                const timeEl = document.getElementById('tsTime_' + i);
+                if (!nameEl) break;
+                const name = nameEl.value.trim();
+                const time = timeEl.value.trim();
+                if (name && time) {
+                    newPresets.push({ id: 'ts_' + (i), name: name, time: time });
+                }
+                i++;
+            }
+            if (newPresets.length === 0) { showToast('请至少保留一个时间段'); return; }
+            timeSlotPresets = newPresets;
+            saveData();
+            closeModal();
+            showToast('时间段已保存');
+        }
+
+        // ==================== 课消打卡 ====================
+        let attendanceSelectedClassId = null;
+
+        function renderAttendanceView() {
+            // 班级标签
+            const tabsContainer = document.getElementById('attendanceClassTabs');
+            if (scheduleClasses.length === 0) {
+                tabsContainer.innerHTML = '<span style="color:#8e8e93;font-size:13px;">暂无班级</span>';
+                document.getElementById('attendanceContent').innerHTML = '';
+                return;
+            }
+            if (!attendanceSelectedClassId) attendanceSelectedClassId = scheduleClasses[0].id;
+            
+            let tabsHtml = '';
+            scheduleClasses.forEach(cls => {
+                const active = cls.id === attendanceSelectedClassId ? 'active' : '';
+                tabsHtml += '<span class="class-tab ' + active + '" style="background:' + (cls.color||'#007aff') + ';" onclick="selectAttendanceClass(\'' + cls.id + '\')">' + cls.name + '</span>';
+            });
+            tabsContainer.innerHTML = tabsHtml;
+            
+            renderAttendanceStudents();
+        }
+
+        function selectAttendanceClass(classId) {
+            attendanceSelectedClassId = classId;
+            renderAttendanceView();
+        }
+
+        function renderAttendanceStudents() {
+            const cls = scheduleClasses.find(c => c.id === attendanceSelectedClassId);
+            if (!cls) { document.getElementById('attendanceContent').innerHTML = ''; return; }
+            const classStudents = (cls.studentIds||[]).map(id => students.find(s => s.id === id)).filter(Boolean);
+            if (classStudents.length === 0) {
+                document.getElementById('attendanceContent').innerHTML = '<div style="text-align:center;padding:40px 0;color:#8e8e93;">该班级暂无学生</div>';
+                return;
+            }
+            
+            // 获取该班级的排课月份范围
+            const now = new Date();
+            const months = [];
+            for (let i = 0; i < 4; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                months.push({ year: d.getFullYear(), month: d.getMonth() + 1 });
+            }
+            months.reverse();
+            
+            // 获取该班级排课日期
+            const scheduledDates = getClassScheduledDates(cls.id, months);
+            
+            let html = '';
+            classStudents.forEach(student => {
+                html += '<div class="student-card">';
+                html += '<div class="name-row"><span class="student-name">' + student.name + '</span></div>';
+                
+                months.forEach(({ year, month }) => {
+                    const mDates = scheduledDates.filter(d => {
+                        const parts = d.split('-');
+                        return parseInt(parts[0]) === year && parseInt(parts[1]) === month;
+                    });
+                    if (mDates.length === 0) return;
+                    
+                    // 收集该月份该班级的日期备注
+                    let dateNoteLabels = [];
+                    mDates.forEach(d => {
+                        const note = classDateNotes[cls.id + '_' + d];
+                        if (note) {
+                            const day = parseInt(d.split('-')[2]);
+                            dateNoteLabels.push(day + '日:' + note);
+                        }
+                    });
+                    
+                    html += '<div class="month-label">' + month + '月' + 
+                        (dateNoteLabels.length > 0 ? ' <span class="note-header">' + dateNoteLabels.join('; ') + '</span>' : '') + 
+                        '</div>';
+                    html += '<div class="date-grid">';
+                    mDates.forEach(d => {
+                        const day = parseInt(d.split('-')[2]);
+                        const record = (student.attendance_records||[]).find(r => r.date === d);
+                        let bg = '#f2f2f7';
+                        let textColor = '#1c1c1e';
+                        if (record) {
+                            if (record.status === '出勤' || record.status === '迟到') { bg = '#34c759'; textColor = '#fff'; }
+                            else if (record.status === '请假') { bg = COLOR_LEAVE; textColor = '#fff'; }
+                            else if (record.status === '缺勤' || record.status === '旷课') { bg = COLOR_ABSENT; textColor = '#fff'; }
+                        }
+                        html += '<div class="date-square" style="background:'+bg+';color:'+textColor+';" onclick="cycleAttendance(' + student.id + ',\'' + d + '\',' + cls.id + ')" title="' + d + (record?' '+record.status:' 未打卡') + ' (Shift+点击设置备注)">' + day + '</div>';
+                    });
+                    html += '</div>';
+                });
+                html += '</div>';
+            });
+            
+            document.getElementById('attendanceContent').innerHTML = html || '<div style="text-align:center;padding:20px;color:#8e8e93;">暂无排课数据</div>';
+        }
+
+        function cycleAttendance(studentId, date, classId) {
+            // 检查Shift键
+            if (event && event.shiftKey) {
+                setDateNote(studentId, date, classId);
+                return;
+            }
+            
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+            if (!student.attendance_records) student.attendance_records = [];
+            
+            const existingIdx = student.attendance_records.findIndex(r => r.date === date);
+            const statuses = ['', '出勤', '请假', '缺勤'];
+            
+            if (existingIdx === -1) {
+                // 未打卡 -> 出勤
+                student.attendance_records.push({
+                    id: Date.now(),
+                    date: date,
+                    timeSlot: '',
+                    status: '出勤',
+                    topic: '',
+                    feedback: ''
+                });
+            } else {
+                const currentStatus = student.attendance_records[existingIdx].status;
+                const nextMap = { '出勤': '请假', '请假': '缺勤', '缺勤': '', '迟到': '出勤', '旷课': '出勤' };
+                const next = nextMap[currentStatus] || '出勤';
+                if (next === '') {
+                    student.attendance_records.splice(existingIdx, 1);
+                } else {
+                    student.attendance_records[existingIdx].status = next;
+                }
+            }
+            saveData();
+            renderAttendanceStudents();
+        }
+
+        function setDateNote(studentId, date, classId) {
+            const key = classId + '_' + date;
+            const currentNote = classDateNotes[key] || '';
+            const note = prompt('请输入日期备注（留空则删除）：', currentNote);
+            if (note === null) return;
+            if (note.trim() === '') {
+                delete classDateNotes[key];
+            } else {
+                classDateNotes[key] = note.trim();
+            }
+            saveData();
+            renderAttendanceStudents();
+            showToast(note.trim() ? '备注已保存' : '备注已删除');
+        }
+
+        // ==================== 学费统计 ====================
+        let tuitionSelectedClassId = null;
+
+        function renderTuitionView() {
+            const yearSel = document.getElementById('tuitionYear');
+            if (yearSel.options.length === 0) {
+                const now = new Date();
+                for (let y = now.getFullYear() - 1; y <= now.getFullYear() + 2; y++) {
+                    yearSel.innerHTML += '<option value="'+y+'"'+(y===now.getFullYear()?' selected':'')+'>'+y+'年</option>';
+                }
+            }
+            
+            const tabsContainer = document.getElementById('tuitionClassTabs');
+            if (scheduleClasses.length === 0) {
+                tabsContainer.innerHTML = '<span style="color:#8e8e93;font-size:13px;">暂无班级</span>';
+                document.getElementById('tuitionContent').innerHTML = '';
+                return;
+            }
+            if (!tuitionSelectedClassId) tuitionSelectedClassId = scheduleClasses[0].id;
+            
+            let tabsHtml = '';
+            scheduleClasses.forEach(cls => {
+                const active = cls.id === tuitionSelectedClassId ? 'active' : '';
+                tabsHtml += '<span class="class-tab ' + active + '" style="background:' + (cls.color||'#007aff') + ';" onclick="selectTuitionClass(\'' + cls.id + '\')">' + cls.name + '</span>';
+            });
+            tabsContainer.innerHTML = tabsHtml;
+            
+            renderTuitionStudents();
+        }
+
+        function selectTuitionClass(classId) {
+            tuitionSelectedClassId = classId;
+            renderTuitionView();
+        }
+
+        function renderTuitionStudents() {
+            const cls = scheduleClasses.find(c => c.id === tuitionSelectedClassId);
+            if (!cls) { document.getElementById('tuitionContent').innerHTML = ''; return; }
+            const classStudents = (cls.studentIds||[]).map(id => students.find(s => s.id === id)).filter(Boolean);
+            if (classStudents.length === 0) {
+                document.getElementById('tuitionContent').innerHTML = '<div style="text-align:center;padding:40px 0;color:#8e8e93;">该班级暂无学生</div>';
+                return;
+            }
+            
+            const months = getTuitionMonthRange();
+            const scheduledDates = getClassScheduledDates(cls.id, months);
+            
+            let html = '';
+            classStudents.forEach(student => {
+                const tuitionData = studentTuitionData[student.id] || {};
+                const totalLessons = getTotalLessons(student.id, months);
+                const totalConsumed = getTotalConsumed(student.id, months);
+                const remainLessons = (tuitionData.prepaidLessons || 0) - getAllTimeAttendanceCount(student.id);
+                
+                html += '<div class="student-card">';
+                html += '<div class="name-row">';
+                html += '<span class="student-name">' + student.name + '</span>';
+                html += '<div style="display:flex;gap:6px;align-items:center;">';
+                html += '<span style="font-size:12px;color:#34c759;font-weight:600;">课消' + totalLessons + '次</span>';
+                html += '<span style="font-size:12px;color:' + (remainLessons >= 0 ? '#007aff' : '#ff3b30') + ';font-weight:600;">剩余' + remainLessons + '节</span>';
+                html += '<button class="btn btn-primary btn-small" style="padding:4px 10px;font-size:11px;" onclick="showAddPaymentModalForStudent(' + student.id + ')">缴费</button>';
+                html += '<button class="btn btn-secondary btn-small" style="padding:4px 8px;font-size:11px;" onclick="showSetDefaultPriceModal(' + student.id + ')">单价</button>';
+                html += '</div></div>';
+                
+                months.forEach(({ year, month }) => {
+                    const mDates = scheduledDates.filter(d => {
+                        const parts = d.split('-');
+                        return parseInt(parts[0]) === year && parseInt(parts[1]) === month;
+                    });
+                    if (mDates.length === 0) return;
+                    
+                    // 收集该月份的备注
+                    let dateNoteLabels = [];
+                    mDates.forEach(d => {
+                        const note = classDateNotes[cls.id + '_' + d];
+                        if (note) {
+                            const day = parseInt(d.split('-')[2]);
+                            dateNoteLabels.push(day + '日:' + note);
+                        }
+                    });
+                    
+                    html += '<div class="month-label">' + month + '月' +
+                        (dateNoteLabels.length > 0 ? ' <span class="note-header">' + dateNoteLabels.join('; ') + '</span>' : '') +
+                        '</div>';
+                    html += '<div class="date-grid">';
+                    mDates.forEach(d => {
+                        const day = parseInt(d.split('-')[2]);
+                        const record = (student.attendance_records||[]).find(r => r.date === d);
+                        const specialPrice = (tuitionData.specialPrices||{})[d];
+                        const specialNote = (tuitionData.specialPriceNotes||{})[d] || '';
+                        const hasAttendance = record && (record.status === '出勤' || record.status === '迟到');
+                        const isLeave = record && record.status === '请假';
+                        const isAbsent = record && (record.status === '缺勤' || record.status === '旷课');
+                        
+                        let bg = '#f2f2f7';
+                        let textColor = '#1c1c1e';
+                        if (hasAttendance) {
+                            bg = specialPrice ? COLOR_SPECIAL_PRICE : '#34c759';
+                            textColor = '#fff';
+                        } else if (isLeave) { bg = COLOR_LEAVE; textColor = '#fff'; }
+                        else if (isAbsent) { bg = COLOR_ABSENT; textColor = '#fff'; }
+                        
+                        html += '<div class="date-square" style="background:'+bg+';color:'+textColor+';" onclick="if(event.shiftKey){setDateNote(' + student.id + ',\'' + d + '\',\'' + cls.id + '\')}else{showSetSpecialPriceModal(' + student.id + ',\'' + d + '\')}" title="' + d + ' ¥' + getLessonPrice(student.id, d) + (specialNote ? ' (' + specialNote + ')' : '') + '">' + day + '</div>';
+                    });
+                    html += '</div>';
+                });
+                html += '</div>';
+            });
+            
+            document.getElementById('tuitionContent').innerHTML = html || '<div style="text-align:center;padding:20px;color:#8e8e93;">暂无排课数据</div>';
+        }
+
+        function showSetDefaultPriceModal(studentId) {
+            const data = studentTuitionData[studentId] || {};
+            const defaultPrice = data.defaultPrice || 0;
+            const html = '<div class="modal-title">设置默认单价</div>' +
+                '<div style="margin-bottom:14px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">课单价（元）</label><input type="number" id="defaultPriceInput" class="ios-input" value="' + defaultPrice + '" placeholder="如：200"></div>' +
+                '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+                '<button class="btn btn-secondary btn-small" onclick="closeModal()">取消</button>' +
+                '<button class="btn btn-primary btn-small" onclick="saveDefaultPrice('+studentId+')">保存</button></div>';
+            showModal(html);
+        }
+
+        function saveDefaultPrice(studentId) {
+            const price = parseFloat(document.getElementById('defaultPriceInput').value) || 0;
+            if (!studentTuitionData[studentId]) studentTuitionData[studentId] = {};
+            studentTuitionData[studentId].defaultPrice = price;
+            saveData();
+            closeModal();
+            renderTuitionStudents();
+            showToast('单价已设置');
+        }
+
+        function showSetSpecialPriceModal(studentId, date) {
+            const data = studentTuitionData[studentId] || {};
+            const currentSpecial = (data.specialPrices||{})[date];
+            const currentNote = (data.specialPriceNotes||{})[date] || '';
+            const defaultPrice = data.defaultPrice || 0;
+            const html = '<div class="modal-title">' + date + ' 设置单价</div>' +
+                '<div style="margin-bottom:8px;font-size:13px;color:#8e8e93;">默认单价：¥' + defaultPrice + '</div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">课单价（元，留空使用默认）</label><input type="number" id="specialPriceInput" class="ios-input" value="' + (currentSpecial||'') + '"></div>' +
+                '<div style="margin-bottom:14px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">备注原因</label><input type="text" id="specialPriceNote" class="ios-input" value="' + currentNote + '" placeholder="如：加课、试听等"></div>' +
+                '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+                '<button class="btn btn-secondary btn-small" onclick="closeModal()">取消</button>' +
+                '<button class="btn btn-primary btn-small" onclick="saveSpecialPrice('+studentId+',\''+date+'\')">保存</button></div>';
+            showModal(html);
+        }
+
+        function saveSpecialPrice(studentId, date) {
+            const priceInput = document.getElementById('specialPriceInput');
+            const noteInput = document.getElementById('specialPriceNote');
+            const price = priceInput ? priceInput.value.trim() : '';
+            const note = noteInput ? noteInput.value.trim() : '';
+            if (!studentTuitionData[studentId]) studentTuitionData[studentId] = {};
+            if (!studentTuitionData[studentId].specialPrices) studentTuitionData[studentId].specialPrices = {};
+            if (!studentTuitionData[studentId].specialPriceNotes) studentTuitionData[studentId].specialPriceNotes = {};
+            if (price === '') {
+                delete studentTuitionData[studentId].specialPrices[date];
+                delete studentTuitionData[studentId].specialPriceNotes[date];
+            } else {
+                studentTuitionData[studentId].specialPrices[date] = parseFloat(price) || 0;
+                studentTuitionData[studentId].specialPriceNotes[date] = note;
+            }
+            saveData();
+            closeModal();
+            renderTuitionStudents();
+            showToast('单价已设置');
+        }
+
+        function showAddPaymentModalForStudent(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (!student) return;
+            const html = '<div class="modal-title">添加缴费记录 - ' + student.name + '</div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">缴费金额（元）</label><input type="number" id="payAmount" class="ios-input" placeholder="如：5000"></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">购买课时</label><input type="number" id="payLessons" class="ios-input" placeholder="如：20"></div>' +
+                '<div style="margin-bottom:10px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">日期</label><input type="date" id="payDate" class="ios-input" value="' + new Date().toISOString().split('T')[0] + '"></div>' +
+                '<div style="margin-bottom:14px;"><label style="font-size:13px;color:#666;display:block;margin-bottom:4px;">备注</label><input type="text" id="payNote" class="ios-input" placeholder="如：续费20次"></div>' +
+                '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+                '<button class="btn btn-secondary btn-small" onclick="closeModal()">取消</button>' +
+                '<button class="btn btn-primary btn-small" onclick="savePayment('+studentId+')">保存</button></div>';
+            showModal(html);
+        }
+
+        function savePayment(studentId) {
+            const amount = parseFloat(document.getElementById('payAmount').value) || 0;
+            const lessons = parseInt(document.getElementById('payLessons').value) || 0;
+            const date = document.getElementById('payDate').value;
+            const note = document.getElementById('payNote').value.trim();
+            if (amount <= 0 || lessons <= 0) { showToast('请填写有效金额和课时'); return; }
+            
+            const record = {
+                id: Date.now(),
+                studentId: studentId,
+                amount: amount,
+                lessons: lessons,
+                date: date,
+                note: note
+            };
+            paymentRecords.push(record);
+            
+            // 更新剩余课时
+            if (!studentTuitionData[studentId]) studentTuitionData[studentId] = {};
+            studentTuitionData[studentId].prepaidLessons = (studentTuitionData[studentId].prepaidLessons || 0) + lessons;
+            
+            saveData();
+            closeModal();
+            renderTuitionStudents();
+            showToast('缴费记录已添加');
+        }
+
+        // ==================== 设置 ====================
+        function renderSettings() {
+            document.getElementById('adminNameInput').value = adminDisplayName;
+            document.getElementById('versionInfo').innerHTML = '管理员端 v1.0<br>数据版本: 21<br>数据兼容桌面版 ios_physics_app_v5.html';
+        }
+
+        function saveAdminName() {
+            const name = document.getElementById('adminNameInput').value.trim();
+            if (!name) { showToast('请输入名称'); return; }
+            adminDisplayName = name;
+            localStorage.setItem('physics_admin_display_name', name);
+            showToast('名称已保存');
+        }
+
+        // ==================== 初始化 ====================
+        // 加载测试数据（仅开发预览用）
+        function loadTestData() {
+            if (students.length > 0) return;
+            
+            // 确保有默认班级
+            if (!scheduleClasses || scheduleClasses.length === 0) {
+                scheduleClasses = [
+                    {id:'cls_1',name:'高一力学A班',level:'基础班',grade:'高一',color:'#2196f3',studentIds:[]},
+                    {id:'cls_2',name:'高一力学B班',level:'提高班',grade:'高一',color:'#4caf50',studentIds:[]},
+                    {id:'cls_3',name:'高二电磁A班',level:'尖子班',grade:'高二',color:'#ff9800',studentIds:[]},
+                    {id:'cls_4',name:'高二电磁B班',level:'基础班',grade:'高二',color:'#9c27b0',studentIds:[]},
+                    {id:'cls_5',name:'高三综合A班',level:'提高班',grade:'高三',color:'#f44336',studentIds:[]},
+                    {id:'cls_6',name:'高三综合B班',level:'尖子班',grade:'高三',color:'#00bcd4',studentIds:[]}
+                ];
+            }
+            
+            // 添加测试学生
+            var names = ['张三','李四','王五','赵六','钱七','孙八','周九','吴十','郑明','冯亮','陈静','褚华'];
+            var schools = ['一中','二中','三中','附中'];
+            names.forEach(function(name, i) {
+                students.push({
+                    id: 1000 + i, name: name, school: schools[i % 4], cohort: '2025', role: 'student',
+                    knowledge_scores: {}, study_plans: [], attendance_records: [], score_records: [],
+                    understanding_records: [], homework_records: [], learning_summaries: []
+                });
+            });
+            
+            // 分配学生到班级
+            scheduleClasses[0].studentIds = [1000,1001,1002,1003];
+            scheduleClasses[1].studentIds = [1004,1005,1006,1007];
+            scheduleClasses[2].studentIds = [1008,1009,1010,1011];
+            
+            // 添加排课数据（本周）
+            var today = new Date();
+            for (var i = -3; i <= 3; i++) {
+                var d = new Date(today);
+                d.setDate(d.getDate() + i);
+                var ds = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                if (d.getDay() > 0 && d.getDay() < 6) {
+                    weeklyScheduleData[ds] = { 'ts_A': ['cls_1'], 'ts_B': ['cls_2'], 'ts_C': ['cls_3'] };
+                }
+            }
+            
+            // 添加一些出勤记录
+            var dates = Object.keys(weeklyScheduleData).sort();
+            students.forEach(function(s, idx) {
+                var clsIdx = Math.floor(idx / 4);
+                if (clsIdx < 3 && dates.length > 0) {
+                    var date = dates[dates.length - 1];
+                    s.attendance_records.push({
+                        id: Date.now() + idx, date: date, status: '出勤', timeSlot: 'ts_A',
+                        topic: '牛顿第一定律', understanding: 85, note: ''
+                    });
+                }
+            });
+            
+            // 添加学费数据
+            studentTuitionData['1000'] = { defaultPrice: 300, prepaidLessons: 20 };
+            studentTuitionData['1001'] = { defaultPrice: 300, prepaidLessons: 15 };
+            studentTuitionData['1002'] = { defaultPrice: 300, prepaidLessons: 18 };
+            
+            // 添加日期备注
+            var tmr = new Date();
+            tmr.setDate(tmr.getDate() + 1);
+            var tmrStr = tmr.getFullYear() + '-' + String(tmr.getMonth()+1).padStart(2,'0') + '-' + String(tmr.getDate()).padStart(2,'0');
+            classDateNotes['cls_1_' + tmrStr] = '月考';
+            
+            saveData();
+        }
+        
+        function init() {
+            loadData();
+            loadTestData();
+            switchTab('home');
+            
+            // 点击模态背景关闭
+            document.getElementById('modalOverlay').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
